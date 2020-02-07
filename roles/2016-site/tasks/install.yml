@@ -1,0 +1,33 @@
+---
+
+- name: Install packages
+  pkgng:
+    name: sudo,gtar
+    state: latest
+
+- name: "Create {{ app_user }} user"
+  user:
+    name: "{{ app_user }}"
+    shell: /usr/sbin/nologin
+- name: Remove existing build directory
+  file:
+    path: "~{{ app_user }}/app"
+    state: absent
+- name: Create app folder
+  file:
+    path: "~{{ app_user }}/app"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0700'
+- name: Extract build
+  become: yes
+  become_user: "{{ app_user }}"
+  unarchive:
+    src: "{{ artifact_path }}"
+    dest: "~{{ app_user }}/app"
+    mode: '0500'
+- name: Remove root ssh key
+  file:
+    path: ~/.ssh
+    state: absent

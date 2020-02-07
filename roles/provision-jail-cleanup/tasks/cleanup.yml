@@ -1,0 +1,16 @@
+---
+
+- name: Disable ssh root login
+  lineinfile:
+    path: "{{ jail_root_path }}etc/ssh/sshd_config"
+    regexp: '^PermitRootLogin'
+    line: '#PermitRootLogin no'
+- name: Uninstall pkgs 
+  shell: "iocage pkg {{ jail_name }} delete -y {{ cleanup_pkgs }}"
+  when: cleanup_pkgs | default(false)
+- name: pkg clean 
+  shell: "iocage pkg {{ jail_name }} clean -y -a"
+- name: Delete pkg db 
+  iocage: state=exec name="{{ jail_name }}" user="root" cmd="rm -rf /var/db/pkg"
+- name: Stop sshd
+  iocage: state=exec name="{{ jail_name }}" user="root" cmd="service sshd onestop"

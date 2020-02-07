@@ -1,0 +1,25 @@
+---
+
+- name: Provision the jail
+  connection: ssh
+  gather_facts: false
+  hosts: jailhosts
+  user: jenkins-deploy
+  roles:
+    - provision-jail
+
+- name: Build 2016-site
+  connection: ssh
+  gather_facts: false
+  hosts: jails
+  user: root
+  roles:
+    - 2016-site-build
+
+- name: Cleanup the jail
+  connection: ssh
+  gather_facts: false
+  hosts: jailhosts
+  user: jenkins-deploy
+  roles:
+    - provision-jail-cleanup

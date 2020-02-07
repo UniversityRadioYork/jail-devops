@@ -1,0 +1,44 @@
+---
+
+- name: "Fetch FreeBSD {{ app_freebsd_version }}"
+  iocage: state=fetched release="{{ app_freebsd_version }}"
+  when: freebsd_fetch | default(false)
+- name: Copy pkg list.
+  copy:
+    src: "{{ pkg_list }}"
+    dest: "{{ pkg_list_jail }}"
+  when: pkg_list | default(false)
+
+- name: Create jail
+  iocage:
+    state: present
+    name: "{{ jail_name }}"
+    pkglist: "{{ pkg_list_jail | default(omit) }}"
+    clone_from: "{{ jail_template | default(omit) }}"
+    properties:
+      ip4_addr: "lo1|{{ jail_ip }}"
+- name: Start jail
+  iocage: state=started name="{{ jail_name }}"
+
+- name: Create ~root/.ssh
+  file:
+    path: "{{ jail_root_path }}root/.ssh"
+    state: directory
+    owner: root
+    group: wheel
+    mode: '0700'
+- name: Add root ssh key for provisioning
+  copy:
+    src: "{{ deploy_key }}"
+    dest: "{{ jail_root_path }}root/.ssh/authorized_keys"
+    owner: root
+    group: wheel
+    mode: '0600'
+- name: Enable root ssh login with key
+  lineinfile:
+    path: "{{ jail_root_path }}etc/ssh/sshd_config"
+    regexp: '^#PermitRootLogin'
+    line: 'PermitRootLogin without-password'
+- name: Start sshd in jail
+  iocage: state=exec name="{{ jail_name }}" user="root" cmd="service sshd onestart"
+  ignore_errors: yes

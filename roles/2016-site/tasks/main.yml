@@ -1,0 +1,7 @@
+---
+
+- name: Deploy app to jail
+  become: yes
+  vars:
+    ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q jenkins-deploy@{{ jailhost_ip }}"'
+  import_tasks: install.yml

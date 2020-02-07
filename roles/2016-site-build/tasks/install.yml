@@ -1,0 +1,55 @@
+---
+
+- name: Install packages
+  pkgng:
+    name: sudo,gtar,go,gmake,sassc,git-lite
+    state: latest
+
+- name: "Create {{ app_user }} user"
+  user:
+    name: "{{ app_user }}"
+    shell: /usr/sbin/nologin
+- name: Remove existing build directory
+  file:
+    path: "~{{ app_user }}/{{ app_name }}"
+    state: absent
+- name: Create app folder
+  file:
+    path: "~{{ app_user }}/{{ app_name }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0700'
+- name: Extract build
+  become: yes
+  become_user: "{{ app_user }}"
+  unarchive:
+    src: "{{ source_path }}"
+    dest: "~{{ app_user }}/{{ app_name }}"
+    mode: '0700'
+
+- name: Download go dependencies
+  become: yes
+  become_user: "{{ app_user }}"
+  shell:
+    cmd: "export GOPATH=~/go && go get -d && ls"
+    chdir: "~/{{ app_name }}"
+- name: Build 2016-site
+  become: yes
+  become_user: "{{ app_user }}"
+  shell:
+    cmd: "export GOPATH=~/go && make all && ls"
+    chdir: "~/{{ app_name }}"
+
+- name: Create artifact bundle
+  become: yes
+  become_user: "{{ app_user }}"
+  shell:
+    cmd: "tar -cvzf artifact.tar.gz public/ 2016-site"
+    chdir: "~/{{ app_name }}"
+- name: Fetch artifact bundle
+  fetch:
+    src: "~{{ app_user }}/{{ app_name }}/artifact.tar.gz"
+    dest: "{{ artifact_path }}"
+    flat: yes
+

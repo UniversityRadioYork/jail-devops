@@ -1,0 +1,5 @@
+---
+
+- name: "Create and boostrap jail"
+  import_tasks: provision.yml
+  become: yes

@@ -1,0 +1,3 @@
+---
+# vars file for provision-jail
+pkg_list_jail: "/tmp/{{ jail_name }}_pkgs.json"

@@ -1,0 +1,25 @@
+---
+
+- name: Provision the jail
+  connection: ssh
+  gather_facts: false
+  hosts: jailhosts
+  user: jenkins-deploy
+  roles:
+    - provision-jail
+
+- name: Install pkgng-cache
+  connection: ssh
+  gather_facts: false
+  hosts: jails
+  user: root
+  roles:
+    - pkgng-cache
+
+- name: Cleanup the jail
+  connection: ssh
+  gather_facts: false
+  hosts: jailhosts
+  user: jenkins-deploy
+  roles:
+    - provision-jail-cleanup

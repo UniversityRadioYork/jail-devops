@@ -1,0 +1,6 @@
+---
+
+- name: "Cleanup jail"
+  import_tasks: cleanup.yml
+  when: cleanup_jail | default(false) 
+  become: yes

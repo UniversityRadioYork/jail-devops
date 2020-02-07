@@ -1,0 +1,4 @@
+---
+# vars file for pkgng-cache
+pkg_upstream: "https://pkg.FreeBSD.org/FreeBSD:12:amd64/quarterly/"
+repo_dir: "/var/cache/pkgrepo/"

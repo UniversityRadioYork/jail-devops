@@ -1,0 +1,61 @@
+---
+# tasks file for pkgng-cache
+
+- name: Download pacakges to cache
+  pkgng:
+    name: sudo,nginx,ca_root_nss
+    state: latest
+
+- name: Copy nginx.conf
+  copy:
+    src: nginx.conf
+    dest: /usr/local/etc/nginx/nginx.conf
+
+- name: Stop nginx 
+  service:
+    name: nginx
+    state: stopped
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+
+
+- name: Create repo directory
+  file:
+    path: /var/cache/pkgrepo
+    state: directory
+    owner: www
+    group: wheel
+    mode: '0700' 
+
+- name: Download packagesite.txz
+  get_url:
+    url: "{{ pkg_upstream  }}packagesite.txz"
+    dest: "{{  repo_dir }}packagesite.txz" 
+
+- name: Download meta.txz
+  get_url:
+    url: "{{ pkg_upstream  }}meta.txz"
+    dest: "{{  repo_dir }}meta.txz" 
+
+- name: Download digests.txz
+  get_url:
+    url: "{{ pkg_upstream  }}digests.txz"
+    dest: "{{  repo_dir }}digests.txz" 
+
+- name: Create All symlink
+  file:
+    src: /var/cache/pkg
+    dest: "{{ repo_dir }}All"
+    state: link
+
+- name: Create Latest symlink
+  file:
+    src: /var/cache/pkg
+    dest: "{{ repo_dir }}Latest" 
+    state: link
+
+
+- name: Download packages
+  shell: "pkg fetch -y -d {{ pkg_cache_list }}"
